@@ -23,11 +23,13 @@ function plugin_reports_info ()
 function plugin_reports_init ()
 {
 	global $page, $tab;
+	
 	$tab['reports']['custom'] = 'Custom';
 	$tab['reports']['server'] = 'Server';
 	$tab['reports']['switches'] = 'Switches';
 	$tab['reports']['netsecurity'] = 'Network security';
 	$tab['reports']['router'] = 'Routers';
+	$tab['reports']['wireless'] = 'Wireless';
 	$tab['reports']['vm'] = 'Virtual Machines';
 	
 
@@ -36,6 +38,7 @@ function plugin_reports_init ()
 	$tabhandler['reports']['switches'] = 'renderSwitchReport';
 	$tabhandler['reports']['netsecurity'] = 'renderNetsecurityReport';
 	$tabhandler['reports']['router'] = 'renderRouterReport';
+	$tabhandler['reports']['wireless'] = 'renderWirelessReport';
 	$tabhandler['reports']['vm'] = 'renderVMReport';
 
 	registerTabHandler('reports', 'custom', 'renderCustomReport');
@@ -43,6 +46,7 @@ function plugin_reports_init ()
 	registerTabHandler('reports', 'switches', 'renderSwitchReport');
 	registerTabHandler('reports', 'netsecurity', 'renderNetsecurityReport');
 	registerTabHandler('reports', 'router', 'renderRouterReport');
+	registerTabHandler('reports', 'wireless', 'renderWirelessReport');
 	registerTabHandler('reports', 'vm', 'renderVMReport');
 }
 
@@ -86,6 +90,11 @@ function renderNetsecurityReport()
 function renderRouterReport()
 {
 	$filter='{$typeid_7}'; # typeid_7 = Router
+	renderReport($filter);
+}
+function renderWirelessReport()
+{
+	$filter='{$typeid_965}'; # typeid_7 = Router
 	renderReport($filter);
 }
 function renderVMReport()
@@ -187,7 +196,11 @@ function renderReport($sFilter)
 	  case '{$typeid_798}': $title = 'Network security';
                           $report_type = 'Netsecurity';
                           array_push($aCSVRow, 'Type','Asset No.','Location','OEM S/N','HW Expire Date','OS Version');
-                          break;	  
+                          break;
+	  case '{$typeid_965}': $title = 'Wireless report';
+                          $report_type = 'wireless';
+                          array_push($aCSVRow, 'Type','Asset No.','Location','OEM S/N','OS Version');
+                          break;
       case '{$typeid_1504}': $title = 'Virtual machines report';
                              $report_type = 'vm';
                              array_push($aCSVRow, 'OS','Hypervisor');
@@ -253,7 +266,8 @@ function renderReport($sFilter)
              case '{$typeid_4}':
 			 case '{$typeid_7}':
              case '{$typeid_8}':
-			 case '{$typeid_798}':	 
+			 case '{$typeid_798}':
+			 case '{$typeid_965}':			 
                                  // Type
                                  $aCSVRow[5] = $aRow['HWtype'];
                                  // Asset No
@@ -262,8 +276,6 @@ function renderReport($sFilter)
                                  $aCSVRow[7] = preg_replace('/<a[^>]*>(.*)<\/a>/iU', '$1', $aRow['sLocation']);
                                  // OEM S/N
                                  $aCSVRow[8] = $aRow['OEMSN'];
-                                 // HW Expire Date
-                                 $aCSVRow[9] = $aRow['HWExpDate'];
                                  break;
              case '{$typeid_1504}':
                                  // OS
@@ -282,9 +294,12 @@ function renderReport($sFilter)
                                  break;
 			 case '{$typeid_7}': // OS Version
              case '{$typeid_8}':
-			 case '{$typeid_798}':	 
+			 case '{$typeid_798}':
                                  $aCSVRow[10] = $aRow['sOSVersion'];
                                  break;
+			 case '{$typeid_965}':
+                                 $aCSVRow[10] = $aRow['sOS'];
+                                 break;			 
 			 
          }
 
@@ -358,8 +373,7 @@ function renderReport($sFilter)
              case '{$typeid_4}':
 			 case '{$typeid_7}': 
              case '{$typeid_8}':
-			 case '{$typeid_798}':
-                                 // Type
+			 case '{$typeid_798}':                 // Type
                                  echo '  <td>'.$aRow['HWtype']."</td>\n";
                                  // Asset No
                                  echo '  <td>'.$aRow['sAsset']."</td>\n";
@@ -369,6 +383,16 @@ function renderReport($sFilter)
                                  echo '  <td>'.$aRow['OEMSN']."</td>\n";
                                  // HW Expire Date
                                  echo '  <td>'.$aRow['HWExpDate']."</td>\n";
+                                 break;
+			case '{$typeid_965}': 
+                                 // Type
+                                 echo '  <td>'.$aRow['HWtype']."</td>\n";
+                                 // Asset No
+                                 echo '  <td>'.$aRow['sAsset']."</td>\n";
+                                 // Location
+                                 echo '  <td>'.$aRow['sLocation']."</td>\n";
+                                 // OEM S/N
+                                 echo '  <td>'.$aRow['OEMSN']."</td>\n";
                                  break;
              case '{$typeid_1504}':
                                  // OS
@@ -391,6 +415,9 @@ function renderReport($sFilter)
 			 case '{$typeid_798}':// OS Version
                                  echo '  <td>'.$aRow['sOSVersion']."</td>\n";
                                  break;
+			 case '{$typeid_965}':
+								echo '  <td>'.$aRow['sOS']."</td>\n";
+                                 break;			 
       }
       echo "  </tr>\n";
   }
